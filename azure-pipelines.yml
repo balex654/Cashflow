@@ -31,7 +31,7 @@ stages:
       inputs:
         command: buildAndPush
         repository: $(containerRepository)/$(imageName)
-        dockerfile: Dockerfile
+        dockerfile: backend/Cashflow/Dockerfile
         tags: |
           latest
           $(tag)
