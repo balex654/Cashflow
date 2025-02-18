@@ -12,7 +12,8 @@ namespace Api.Common
         {
             _exceptionHandlers = new Dictionary<Type, Action<ExceptionContext>>
             {
-                { typeof(DuplicateEntityException), HandleDuplicateEntityException }
+                { typeof(DuplicateEntityException), HandleDuplicateEntityException },
+                { typeof(ValidationException), HandleValidationException }
             };
         }
 
@@ -38,6 +39,17 @@ namespace Api.Common
             context.Result = new ObjectResult(details)
             {
                 StatusCode = StatusCodes.Status409Conflict
+            };
+            context.ExceptionHandled = true;
+        }
+
+        private void HandleValidationException(ExceptionContext context)
+        {
+            var exception = context.Exception as ValidationException;
+            var details = new ValidationProblemDetails(exception.Errors);
+            context.Result = new BadRequestObjectResult(details)
+            {
+                StatusCode = StatusCodes.Status400BadRequest
             };
             context.ExceptionHandled = true;
         }

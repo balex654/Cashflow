@@ -1,5 +1,9 @@
 using Api.Common;
+using Application.Common.Behaviors;
 using Domain.User;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Repository;
 using Repository.User;
@@ -23,6 +27,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CashflowDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddMediatR(m => m.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.Load("Application")));
+builder.Services.AddValidatorsFromAssembly(AppDomain.CurrentDomain.Load("Application"));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 
 var app = builder.Build();
 

@@ -22,5 +22,10 @@ namespace Repository.User
         {
             return await _context.User.Where(u => u.Id == id).FirstOrDefaultAsync();
         }
+
+        public async Task<Domain.User.User?> GetByEmail(string email)
+        {
+            return await _context.User.Where(u => u.Email == email).FirstOrDefaultAsync();
+        }
     }
 }

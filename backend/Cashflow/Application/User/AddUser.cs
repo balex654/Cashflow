@@ -28,6 +28,7 @@ namespace Application.User
         public async Task<Resources.User.User> Handle(AddUserCommand request, CancellationToken cancellationToken)
         {
             await CheckExistingUser(request.Id);
+            await CheckExistingEmail(request.Email);
             var newUser = new Domain.User.User(request.Id, request.Email, request.FirstName, request.LastName);
             await _userRepository.Add(newUser);
             return new Resources.User.User(newUser.Id, newUser.Email, newUser.FirstName, newUser.LastName);
@@ -38,6 +39,14 @@ namespace Application.User
             if ((await _userRepository.GetById(id)) != null) 
             {
                 throw new DuplicateEntityException("User with that Id already exists");
+            }
+        }
+
+        private async Task CheckExistingEmail(string email)
+        {
+            if ((await _userRepository.GetByEmail(email)) != null)
+            {
+                throw new DuplicateEntityException("User with that Email already exists");
             }
         }
     }
