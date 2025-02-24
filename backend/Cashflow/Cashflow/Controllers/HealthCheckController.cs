@@ -8,7 +8,7 @@ namespace Api.Controllers
         [HttpGet]
         public IActionResult HealthCheck()
         {
-            return Ok("Ok");
+            return Ok("OK");
         }
     }
 }
