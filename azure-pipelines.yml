@@ -7,6 +7,9 @@ trigger:
 - main
 
 pool:
+  name: Default
+  demands:
+    - Agent.Name -equals BEALEXANDER1831
   vmImage: 'ubuntu-latest'
 
 variables:
