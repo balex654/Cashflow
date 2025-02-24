@@ -6,51 +6,44 @@
 trigger:
 - main
 
+pool:
+  name: Default
+  demands:
+    - Agent.Name -equals BEALEXANDER1831
+  vmImage: 'ubuntu-latest'
+
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  dockerRegistryServiceConnection: 'CashflowACRServiceConnection'
-  containerRepository: 'cashflow'
+  acrName: 'benalexandercashflowregistry'
   imageName: 'cashflow-backend'
-  tag: '$(Build.BuildId)'
-  azureWebAppName: 'cashflow-backend'
-  azureSubscription: 'Azure Subscription 1'
+  dockerfilePath: 'backend/Cashflow/Dockerfile'
+  buildContext: 'backend/Cashflow'
 
-stages:
-- stage: Build
-  displayName: "Build and Push Docker Image"
-  jobs:
-  - job: Build
-    displayName: "Build and Push"
-    pool:
-      vmImage: "ubuntu-latest"
-    steps:
-    - task: Docker@2
-      displayName: "Build and Push Docker Image"
-      inputs:
-        command: buildAndPush
-        repository: $(containerRepository)/$(imageName)
-        dockerfile: backend/Cashflow/Dockerfile
-        tags: |
-          latest
-          $(tag)
-        containerRegistry: $(dockerRegistryServiceConnection)
+steps:
+- task: Docker@2
+  displayName: 'Login to ACR'
+  inputs:
+    command: login
+    containerRegistry: 'CashflowDockerRegistry'
 
-- stage: Deploy
-  displayName: "Deploy to Azure Web App"
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - job: Deploy
-    displayName: "Deploy to Azure"
-    pool:
-      vmImage: "ubuntu-latest"
-    steps:
-    - task: AzureWebAppContainer@1
-      displayName: "Deploy to Azure Web App"
-      inputs:
-        azureSubscription: $(azureSubscription)
-        appName: $(azureWebAppName)
-        containers: |
-          <YourContainerRegistryURL>/$(containerRepository)/$(imageName):$(tag)
+- task: Docker@2
+  displayName: 'Build and Tag Docker Image'
+  inputs:
+    command: build
+    repository: $(acrName).azurecr.io/$(imageName)
+    dockerfile: $(dockerfilePath)
+    buildContext: $(buildContext)
+    tags: |
+      latest
+      $(Build.BuildId)
+
+- task: Docker@2
+  displayName: 'Push Docker Image to ACR'
+  inputs:
+    command: push
+    repository: $(acrName).azurecr.io/$(imageName)
+    tags: |
+      latest
+      $(Build.BuildId)
+
+- script: echo "Docker image pushed to ACR successfully!"
+  displayName: 'Notify Success'
