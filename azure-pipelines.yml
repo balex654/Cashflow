@@ -16,7 +16,7 @@ variables:
   acrName: 'benalexandercashflowregistry'
   imageName: 'cashflow-backend'
   dockerfilePath: 'backend/Cashflow/Dockerfile'
-  buildContext: '.'
+  buildContext: 'backend/Cashflow'
 
 steps:
 - task: Docker@2
