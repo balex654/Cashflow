@@ -22,6 +22,7 @@ jobs:
           echo "##vso[task.setvariable variable=BACKEND_CHANGED]$BACKEND_CHANGED"
           echo "##vso[task.setvariable variable=FRONTEND_CHANGED]$FRONTEND_CHANGED"
         displayName: 'Set change detection variables'
+        shell: bash
         
   - job: BackendBuild
     displayName: 'Build and Push Backend'
