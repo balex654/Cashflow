@@ -36,11 +36,14 @@ steps:
       latest
       $(Build.BuildId)
 
-- task: PowerShell@2
-  displayName: 'Push Image'
+- task: Docker@2
+  displayName: 'Push Docker Image to ACR'
   inputs:
-    targetType: 'inline'
-    script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-backend'
+    command: push
+    repository: $(acrName).azurecr.io/$(imageName)
+    tags: |
+      latest
+      $(Build.BuildId)
 
 - script: echo "Docker image pushed to ACR successfully!"
   displayName: 'Notify Success'
