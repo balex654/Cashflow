@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
 
 trigger:
-- main
+  - main
 
 pool:
   name: Default
@@ -12,24 +12,47 @@ pool:
     - Agent.Name -equals BEALEXANDER1831
   vmImage: 'ubuntu-latest'
 
-steps:
-- task: Docker@2
-  displayName: 'Login to ACR'
-  inputs:
-    command: login
-    containerRegistry: 'CashflowDockerRegistry'
+jobs:
+  - job: DetectChanges
+    displayName: 'Detect changes in backend and frontend'
+    steps:
+      - script: |
+          BACKEND_CHANGED=$(git diff --quiet HEAD^ HEAD -- backend/ || echo "true")
+          FRONTEND_CHANGED=$(git diff --quiet HEAD^ HEAD -- frontend/ || echo "true")
+          echo "##vso[task.setvariable variable=BACKEND_CHANGED]$BACKEND_CHANGED"
+          echo "##vso[task.setvariable variable=FRONTEND_CHANGED]$FRONTEND_CHANGED"
+        displayName: 'Set change detection variables'
+        
+  - job: BackendBuild
+    displayName: 'Build and Push Backend'
+    condition: eq(variables['BACKEND_CHANGED'], 'true')
+    dependsOn: DetectChanges
+    steps:
+    - task: Docker@2
+      displayName: 'Login to ACR'
+      inputs:
+        command: login
+        containerRegistry: 'CashflowDockerRegistry'
+    
+    - task: PowerShell@2
+      displayName: 'Build Image'
+      inputs:
+        targetType: 'inline'
+        script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-backend backend/Cashflow'
+    
+    - task: PowerShell@2
+      displayName: 'Push Image'
+      inputs:
+        targetType: 'inline'
+        script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-backend'
+    
+    - script: echo "Docker image pushed to ACR successfully!"
+      displayName: 'Notify Success'
 
-- task: PowerShell@2
-  displayName: 'Build Image'
-  inputs:
-    targetType: 'inline'
-    script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-backend backend/Cashflow'
-
-- task: PowerShell@2
-  displayName: 'Push Image'
-  inputs:
-    targetType: 'inline'
-    script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-backend'
-
-- script: echo "Docker image pushed to ACR successfully!"
-  displayName: 'Notify Success'
+  - job: FrontendBuild
+    displayName: 'Build and Deploy Frontend'
+    condition: eq(variables['FRONTEND_CHANGED'], 'true')
+    dependsOn: DetectChanges
+    steps:
+      - script: echo "Frontend build steps will go here"
+        displayName: 'Placeholder for frontend tasks'
