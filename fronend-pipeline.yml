@@ -4,7 +4,7 @@ trigger:
       - main
   paths:
     include:
-      - backend/*
+      - frontend/*
 
 pool:
   name: Default
@@ -23,13 +23,13 @@ steps:
   displayName: 'Build Image'
   inputs:
     targetType: 'inline'
-    script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-backend backend/Cashflow'
+    script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-frontend frontend/cashflow'
 
 - task: PowerShell@2
   displayName: 'Push Image'
   inputs:
     targetType: 'inline'
-    script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-backend'
+    script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-frontend'
 
 - script: echo "Docker image pushed to ACR successfully!"
   displayName: 'Notify Success'
