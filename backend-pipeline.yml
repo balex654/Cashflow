@@ -1,0 +1,40 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - backend/*
+
+pool:
+  name: Default
+  demands:
+    - Agent.Name -equals BEALEXANDER1831
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Docker@2
+  displayName: 'Login to ACR'
+  inputs:
+    command: login
+    containerRegistry: 'CashflowDockerRegistry'
+
+- task: PowerShell@2
+  displayName: 'Build Image'
+  inputs:
+    targetType: 'inline'
+    script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-backend backend/Cashflow'
+
+- task: PowerShell@2
+  displayName: 'Push Image'
+  inputs:
+    targetType: 'inline'
+    script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-backend'
+
+- script: echo "Docker image pushed to ACR successfully!"
+  displayName: 'Notify Success'
