@@ -12,6 +12,12 @@ pool:
     - Agent.Name -equals BEALEXANDER1831
   vmImage: 'ubuntu-latest'
 
+variables:
+  acrName: 'benalexandercashflowregistry'
+  imageName: 'cashflow-backend'
+  dockerfilePath: 'backend/Cashflow/Dockerfile'
+  buildContext: 'backend/Cashflow'
+
 steps:
 - task: Docker@2
   displayName: 'Login to ACR'
@@ -19,11 +25,16 @@ steps:
     command: login
     containerRegistry: 'CashflowDockerRegistry'
 
-- task: PowerShell@2
-  displayName: 'Build Image'
+- task: Docker@2
+  displayName: 'Build and Tag Docker Image'
   inputs:
-    targetType: 'inline'
-    script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-backend backend/Cashflow'
+    command: build
+    repository: $(acrName).azurecr.io/$(imageName)
+    dockerfile: $(dockerfilePath)
+    buildContext: $(buildContext)
+    tags: |
+      latest
+      $(Build.BuildId)
 
 - task: PowerShell@2
   displayName: 'Push Image'
