@@ -12,12 +12,6 @@ pool:
     - Agent.Name -equals BEALEXANDER1831
   vmImage: 'ubuntu-latest'
 
-variables:
-  acrName: 'benalexandercashflowregistry'
-  imageName: 'cashflow-backend'
-  dockerfilePath: 'backend/Cashflow/Dockerfile'
-  buildContext: 'backend/Cashflow'
-
 steps:
 - task: Docker@2
   displayName: 'Login to ACR'
@@ -25,25 +19,17 @@ steps:
     command: login
     containerRegistry: 'CashflowDockerRegistry'
 
-- task: Docker@2
-  displayName: 'Build and Tag Docker Image'
+- task: PowerShell@2
+  displayName: 'Build Image'
   inputs:
-    command: build
-    repository: $(acrName).azurecr.io/$(imageName)
-    dockerfile: $(dockerfilePath)
-    buildContext: $(buildContext)
-    tags: |
-      latest
-      $(Build.BuildId)
+    targetType: 'inline'
+    script: 'docker build -t benalexandercashflowregistry.azurecr.io/cashflow-backend backend/Cashflow'
 
-- task: Docker@2
-  displayName: 'Push Docker Image to ACR'
+- task: PowerShell@2
+  displayName: 'Push Image'
   inputs:
-    command: push
-    repository: $(acrName).azurecr.io/$(imageName)
-    tags: |
-      latest
-      $(Build.BuildId)
+    targetType: 'inline'
+    script: 'docker push benalexandercashflowregistry.azurecr.io/cashflow-backend'
 
 - script: echo "Docker image pushed to ACR successfully!"
   displayName: 'Notify Success'
